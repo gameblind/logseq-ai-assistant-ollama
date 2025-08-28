@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浏览器环境 API 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .log {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 浏览器环境 DashScope API 测试</h1>
+        
+        <div class="test-section info">
+            <h3>📋 测试说明</h3>
+            <p>此页面用于测试浏览器环境中对 DashScope API 的调用，以诊断 Logseq 插件中可能存在的问题。</p>
+            <p><strong>注意：</strong>请确保在浏览器开发者工具中查看网络请求和控制台错误。</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 配置</h3>
+            <label for="apiKey">API Key:</label><br>
+            <input type="password" id="apiKey" placeholder="输入你的 DashScope API Key" style="width: 100%; padding: 8px; margin: 5px 0;">
+            <br>
+            <label for="prompt">提示词:</label><br>
+            <input type="text" id="prompt" value="一只可爱的小猫在阳光明媚的花园里玩耍" style="width: 100%; padding: 8px; margin: 5px 0;">
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 测试操作</h3>
+            <button onclick="testCORS()">测试 CORS 预检</button>
+            <button onclick="testAPICall()">测试 API 调用</button>
+            <button onclick="testWithDifferentHeaders()">测试不同请求头</button>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 测试结果</h3>
+            <div id="results" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logEntry.className = type;
+            logEntry.style.margin = '5px 0';
+            logEntry.style.padding = '5px';
+            logEntry.style.borderRadius = '3px';
+            results.appendChild(logEntry);
+            results.scrollTop = results.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testCORS() {
+            log('🔍 开始测试 CORS 预检请求...', 'info');
+            
+            try {
+                const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'authorization,content-type,x-dashscope-async'
+                    }
+                });
+                
+                log(`✅ CORS 预检响应状态: ${response.status}`, 'success');
+                log(`📋 CORS 响应头: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`, 'info');
+                
+            } catch (error) {
+                log(`❌ CORS 预检失败: ${error.message}`, 'error');
+                log(`🔍 错误详情: ${JSON.stringify(error, null, 2)}`, 'error');
+            }
+        }
+
+        async function testAPICall() {
+            const apiKey = document.getElementById('apiKey').value;
+            const prompt = document.getElementById('prompt').value;
+            
+            if (!apiKey) {
+                log('❌ 请先输入 API Key', 'error');
+                return;
+            }
+            
+            log('🚀 开始测试 API 调用...', 'info');
+            
+            const requestData = {
+                model: 'wan2.2-t2v-plus',
+                input: {
+                    prompt: prompt
+                },
+                parameters: {
+                    size: '1280*720'
+                }
+            };
+            
+            log(`📤 请求数据: ${JSON.stringify(requestData, null, 2)}`, 'info');
+            
+            try {
+                const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'X-DashScope-Async': 'enable'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                log(`📥 响应状态: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`📋 响应头: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}`, 'info');
+                
+                const responseText = await response.text();
+                log(`📄 响应内容: ${responseText}`, 'info');
+                
+                if (response.ok) {
+                    try {
+                        const responseData = JSON.parse(responseText);
+                        if (responseData.output && responseData.output.task_id) {
+                            log(`✅ 任务创建成功！任务ID: ${responseData.output.task_id}`, 'success');
+                        } else {
+                            log(`⚠️ 响应格式异常，未找到任务ID`, 'error');
+                        }
+                    } catch (parseError) {
+                        log(`❌ JSON 解析失败: ${parseError.message}`, 'error');
+                    }
+                } else {
+                    log(`❌ API 调用失败`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 网络请求失败: ${error.message}`, 'error');
+                log(`🔍 错误类型: ${error.name}`, 'error');
+                log(`🔍 错误堆栈: ${error.stack}`, 'error');
+                
+                // 检查是否是 CORS 错误
+                if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
+                    log('🚨 检测到 CORS 错误！这可能是浏览器安全策略导致的。', 'error');
+                    log('💡 建议：在 Logseq 插件中，可能需要使用代理或其他方式绕过 CORS 限制。', 'info');
+                }
+            }
+        }
+
+        async function testWithDifferentHeaders() {
+            const apiKey = document.getElementById('apiKey').value;
+            const prompt = document.getElementById('prompt').value;
+            
+            if (!apiKey) {
+                log('❌ 请先输入 API Key', 'error');
+                return;
+            }
+            
+            log('🧪 测试不同的请求头组合...', 'info');
+            
+            const testCases = [
+                {
+                    name: '标准请求头',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'X-DashScope-Async': 'enable'
+                    }
+                },
+                {
+                    name: '最小请求头',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                },
+                {
+                    name: '添加 User-Agent',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'X-DashScope-Async': 'enable',
+                        'User-Agent': 'Logseq-Plugin/1.0'
+                    }
+                }
+            ];
+            
+            for (const testCase of testCases) {
+                log(`🔄 测试: ${testCase.name}`, 'info');
+                
+                try {
+                    const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis', {
+                        method: 'POST',
+                        headers: testCase.headers,
+                        body: JSON.stringify({
+                            model: 'wan2.2-t2v-plus',
+                            input: { prompt: prompt },
+                            parameters: { size: '1280*720' }
+                        })
+                    });
+                    
+                    log(`  📥 ${testCase.name} - 状态: ${response.status}`, response.ok ? 'success' : 'error');
+                    
+                } catch (error) {
+                    log(`  ❌ ${testCase.name} - 失败: ${error.message}`, 'error');
+                }
+                
+                // 添加延迟避免请求过快
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        // 页面加载时的初始化
+        window.addEventListener('load', function() {
+            log('🌐 浏览器环境测试页面已加载', 'success');
+            log(`📱 用户代理: ${navigator.userAgent}`, 'info');
+            log('💡 请在开发者工具的网络选项卡中查看详细的请求信息', 'info');
+        });
+    </script>
+</body>
+</html>

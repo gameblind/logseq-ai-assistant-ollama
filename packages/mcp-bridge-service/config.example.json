@@ -1,0 +1,89 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "0.0.0.0",
+    "logLevel": "debug",
+    "cors": {
+      "origin": [
+        "*"
+      ],
+      "credentials": true
+    }
+  },
+  "services": [
+    {
+      "id": "memory",
+      "name": "Memory Service",
+      "description": "Knowledge graph-based persistent memory system for storing and retrieving information",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "time",
+      "name": "Time Service",
+      "description": "Time and timezone conversion capabilities",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-time"
+      ],
+      "enabled": false
+    },
+    {
+      "id": "filesystem",
+      "name": "Filesystem Service",
+      "description": "Secure file operations with configurable access controls",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/path/to/your/workspace"
+      ],
+      "enabled": true
+    },
+    {
+      "id": "fetch",
+      "name": "Web Fetch Service",
+      "description": "Web content fetching and conversion for efficient LLM usage",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "enabled": false
+    }
+  ],
+  "api": {
+    "imageApiAddress": "https://your-api-endpoint.com",
+    "imageApiKey": "your-image-api-key-here",
+    "ttsApiAddress": "https://your-api-endpoint.com",
+    "ttsApiKey": "your-tts-api-key-here",
+    "requestTimeout": 300,
+    "dashscopeApiKey": "your-dashscope-api-key-here",
+    "imageModel": "qwen-image",
+    "imageEditModel": "qwen-image-edit",
+    "imageEditQuality": "auto",
+    "imageEditResponseFormat": "b64_json",
+    "imageEditSize": "auto",
+    "imageEditCount": "1",
+    "ttsModel": "tts-1",
+    "ttsVoice": "nova",
+    "ttsResponseFormat": "mp3",
+    "ttsSpeed": "1.0",
+    "qwenTtsModel": "cosyvoice-v1",
+    "qwenTtsVoice": "longtian",
+    "qwenTtsFormat": "mp3",
+    "qwenVideoT2VModel": "qwen-vl-max",
+    "qwenVideoI2VModel": "qwen-vl-max",
+    "qwenVideoResolution": "720p",
+    "qwenVideoPromptExtend": true
+  }
+}

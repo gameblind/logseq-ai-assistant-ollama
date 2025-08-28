@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT T2V 功能测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .prompt-text {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .instructions {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+        }
+        .note {
+            background-color: #d1ecf1;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .command {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-weight: bold;
+            color: #e83e8c;
+        }
+        .test-category {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 GPT T2V (文生视频) 功能测试脚本</h1>
+        
+        <div class="instructions">
+            <strong>📋 测试说明：</strong><br>
+            1. 在 Logseq 中创建新的块<br>
+            2. 复制下面的提示词到块中<br>
+            3. 使用 <span class="command">/gpt-qwen-t2v</span> 命令生成视频<br>
+            4. 记录生成结果和任务ID<br>
+            5. 如果超时，使用 <span class="command">/gpt-qwen-query-task</span> 查询状态
+        </div>
+
+        <!-- 基础功能测试 -->
+        <div class="test-section">
+            <div class="test-category">🔧 基础功能测试</div>
+            
+            <div class="test-title">测试 1: 简单场景描述</div>
+            <div class="prompt-text">一只可爱的小猫在阳光明媚的花园里玩耍，蝴蝶在花丛中飞舞</div>
+            <div class="note">预期：生成一个温馨的宠物视频场景</div>
+
+            <div class="test-title">测试 2: 动作描述</div>
+            <div class="prompt-text">一个人在海边慢跑，海浪轻拍岸边，夕阳西下</div>
+            <div class="note">预期：包含人物动作和自然景观的视频</div>
+
+            <div class="test-title">测试 3: 科幻场景</div>
+            <div class="prompt-text">未来城市的天空中飞行汽车穿梭，霓虹灯闪烁，高楼大厦林立</div>
+            <div class="note">预期：科幻风格的城市景观视频</div>
+        </div>
+
+        <!-- 复杂场景测试 -->
+        <div class="test-section">
+            <div class="test-category">🎨 复杂场景测试</div>
+            
+            <div class="test-title">测试 4: 多元素场景</div>
+            <div class="prompt-text">森林中的小溪缓缓流淌，阳光透过树叶洒下斑驳的光影，小鸟在枝头歌唱，远处有鹿群在饮水</div>
+            <div class="note">预期：包含多种自然元素的复杂场景</div>
+
+            <div class="test-title">测试 5: 情感表达</div>
+            <div class="prompt-text">一对恋人在樱花飞舞的公园里漫步，粉色花瓣飘落，温柔的春风吹拂</div>
+            <div class="note">预期：浪漫温馨的情感场景</div>
+
+            <div class="test-title">测试 6: 动态效果</div>
+            <div class="prompt-text">瀑布从高山上倾泻而下，水花四溅，彩虹在水雾中若隐若现</div>
+            <div class="note">预期：强烈动态效果的自然景观</div>
+        </div>
+
+        <!-- 风格测试 -->
+        <div class="test-section">
+            <div class="test-category">🎭 风格测试</div>
+            
+            <div class="test-title">测试 7: 卡通风格</div>
+            <div class="prompt-text">卡通风格的小熊在蜂蜜罐旁开心地舔着爪子，周围有飞舞的蜜蜂</div>
+            <div class="note">预期：可爱的卡通动画风格</div>
+
+            <div class="test-title">测试 8: 写实风格</div>
+            <div class="prompt-text">写实风格的老鹰在蓝天白云中翱翔，翅膀有力地拍打着</div>
+            <div class="note">预期：逼真的自然纪录片风格</div>
+
+            <div class="test-title">测试 9: 艺术风格</div>
+            <div class="prompt-text">梵高风格的向日葵田，色彩浓烈，笔触明显，风吹麦浪</div>
+            <div class="note">预期：具有艺术风格的视频</div>
+        </div>
+
+        <!-- 技术测试 -->
+        <div class="test-section">
+            <div class="test-category">⚙️ 技术测试</div>
+            
+            <div class="test-title">测试 10: 短提示词</div>
+            <div class="prompt-text">雨中漫步</div>
+            <div class="note">预期：测试最简提示词的处理能力</div>
+
+            <div class="test-title">测试 11: 长提示词</div>
+            <div class="prompt-text">在一个宁静的秋日午后，金黄色的银杏叶片如雨般飘落，覆盖了整个石板小径。一位身穿米色风衣的女子缓缓走过，她的脚步声在寂静中格外清晰。远处的咖啡馆里传来悠扬的钢琴声，温暖的灯光从窗户中透出，与即将到来的黄昏形成美丽的对比。</div>
+            <div class="note">预期：测试长文本的理解和视频生成能力</div>
+
+            <div class="test-title">测试 12: 中英混合</div>
+            <div class="prompt-text">A beautiful sunset over the 长城 Great Wall, with golden light illuminating the ancient stones</div>
+            <div class="note">预期：测试中英文混合提示词的处理</div>
+        </div>
+
+        <!-- 错误测试 -->
+        <div class="test-section">
+            <div class="test-category">🚫 边界测试</div>
+            
+            <div class="test-title">测试 13: 空提示词</div>
+            <div class="prompt-text"></div>
+            <div class="note">预期：应该显示错误提示，要求输入有效提示词</div>
+
+            <div class="test-title">测试 14: 特殊字符</div>
+            <div class="prompt-text">@#$%^&*()_+ 测试特殊字符 !@#$%</div>
+            <div class="note">预期：测试特殊字符的处理能力</div>
+        </div>
+
+        <!-- 测试记录表格 -->
+        <div class="test-section">
+            <div class="test-category">📊 测试记录表</div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="border: 1px solid #ddd; padding: 10px;">测试编号</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">任务ID</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">状态</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">生成时间</th>
+                        <th style="border: 1px solid #ddd; padding: 10px;">备注</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">测试 1</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">测试 2</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;"></td>
+                    </tr>
+                    <!-- 可以继续添加更多行 -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="note" style="margin-top: 30px;">
+            <strong>💡 测试提示：</strong><br>
+            • 每次测试后记录任务ID，便于后续查询<br>
+            • 注意观察不同提示词的生成效果差异<br>
+            • 测试过程中如遇到问题，可使用查询命令跟踪任务状态<br>
+            • 建议在不同时间段进行测试，观察服务器负载对生成速度的影响
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logseq MCP Bridge Service - 配置管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .status-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .status-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .status-online {
+            color: #27ae60;
+        }
+
+        .status-offline {
+            color: #e74c3c;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .panel-content {
+            padding: 20px;
+        }
+
+        .service-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .service-item {
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .service-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .service-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .service-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-connected {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .status-disconnected {
+            background: #fadbd8;
+            color: #e74c3c;
+        }
+
+        .status-disabled {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .service-description {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .service-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #fadbd8;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #d5f4e6;
+            color: #27ae60;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .close-btn:hover {
+            color: #2c3e50;
+        }
+
+        /* 标签页样式 */
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab:hover {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .nav-tab.active {
+            color: #3498db;
+            background: #f8f9fa;
+            border-bottom-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 任务状态页面样式 */
+        #tasks-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-id {
+            font-weight: bold;
+            color: #2c3e50;
+            font-family: monospace;
+        }
+
+        .task-type {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .task-details {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .task-error {
+            color: #e74c3c;
+            background: #fadbd8;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+
+        /* 配置页面样式 */
+        .config-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .config-section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .form-help {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .config-form {
+            max-width: 800px;
+        }
+
+        /* 密码字段显示切换 */
+        .password-field {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .password-toggle:hover {
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .nav-tab {
+                border-bottom: 1px solid #ecf0f1;
+                border-left: 3px solid transparent;
+            }
+
+            .nav-tab.active {
+                border-left-color: #3498db;
+                border-bottom-color: transparent;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Logseq MCP Bridge Service</h1>
+            <p>Model Context Protocol 桥接服务管理界面</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-card">
+                <h3>服务状态</h3>
+                <div class="status-value" id="server-status">检查中...</div>
+            </div>
+            <div class="status-card">
+                <h3>已连接服务</h3>
+                <div class="status-value" id="connected-count">0</div>
+            </div>
+            <div class="status-card">
+                <h3>可用工具</h3>
+                <div class="status-value" id="tools-count">0</div>
+            </div>
+            <div class="status-card">
+                <h3>运行时间</h3>
+                <div class="status-value" id="uptime">0s</div>
+            </div>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('services')">📋 MCP 服务</button>
+            <button class="nav-tab" onclick="showTab('tools')">🛠️ 工具列表</button>
+            <button class="nav-tab" onclick="showTab('config')">⚙️ API 配置</button>
+            <button class="nav-tab" onclick="showTab('tasks')">📊 任务状态</button>
+        </div>
+
+        <!-- 服务管理标签页 -->
+        <div id="services-tab" class="tab-content active">
+            <div class="main-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        📋 MCP 服务列表
+                        <button class="btn btn-success" onclick="showAddServiceModal()" style="float: right;">+ 添加服务</button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="services-loading" class="loading">正在加载服务列表...</div>
+                        <div id="services-error" class="error" style="display: none;"></div>
+                        <div id="services-list" class="service-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工具列表标签页 -->
+        <div id="tools-tab" class="tab-content">
+            <div class="main-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        🛠️ 可用工具
+                    </div>
+                    <div class="panel-content">
+                        <div id="tools-loading" class="loading">正在加载工具列表...</div>
+                        <div id="tools-error" class="error" style="display: none;"></div>
+                        <div id="tools-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API 配置标签页 -->
+        <div id="config-tab" class="tab-content">
+            <div class="main-content">
+                <div class="panel">
+                    <div class="panel-header">
+                        ⚙️ API 配置管理
+                        <button class="btn btn-primary" onclick="saveApiConfig()" style="float: right;">💾 保存配置</button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="config-loading" class="loading">正在加载配置...</div>
+                        <div id="config-error" class="error" style="display: none;"></div>
+                        <div id="config-success" class="success" style="display: none;"></div>
+                        
+                        <div id="config-form" style="display: none;">
+                            <!-- 图像生成 API 配置 -->
+                            <div class="config-section">
+                                <h3 class="config-section-title">🎨 图像生成 API</h3>
+                                <div class="form-group">
+                                    <label class="form-label">API 地址</label>
+                                    <input type="url" class="form-input" id="image-api-address" placeholder="https://api.example.com">
+                                    <small class="form-help">图像生成服务的API地址</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">API 密钥</label>
+                                    <input type="text" class="form-input" id="image-api-key" placeholder="sk-...">
+                                    <small class="form-help">图像生成服务的API密钥</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">图像生成模型</label>
+                                    <select class="form-select" id="image-model">
+                                        <option value="qwen-image">Qwen Image</option>
+                                        <option value="dall-e-3">DALL-E 3</option>
+                                    </select>
+                                    <small class="form-help">用于文生图和图生图的模型</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">图像编辑模型</label>
+                                    <select class="form-select" id="image-edit-model">
+                                        <option value="qwen-image-edit">Qwen Image Edit</option>
+                                        <option value="gpt-image-1">GPT Image 1</option>
+                                        <option value="dall-e-2">DALL-E 2</option>
+                                    </select>
+                                    <small class="form-help">用于图像编辑的模型</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">编辑质量</label>
+                                    <select class="form-select" id="image-edit-quality">
+                                        <option value="auto">自动</option>
+                                        <option value="high">高质量</option>
+                                        <option value="medium">中等质量</option>
+                                        <option value="low">低质量</option>
+                                    </select>
+                                    <small class="form-help">图像编辑的质量设置（仅gpt-image-1支持）</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">响应格式</label>
+                                    <select class="form-select" id="image-edit-response-format">
+                                        <option value="b64_json">Base64 JSON</option>
+                                        <option value="url">URL</option>
+                                    </select>
+                                    <small class="form-help">编辑后图像的返回格式</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">图像尺寸</label>
+                                    <select class="form-select" id="image-edit-size">
+                                        <option value="auto">自动</option>
+                                        <option value="1024x1024">1024x1024</option>
+                                        <option value="1536x1024">1536x1024</option>
+                                        <option value="1024x1536">1024x1536</option>
+                                    </select>
+                                    <small class="form-help">编辑后图像的尺寸</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">生成数量</label>
+                                    <select class="form-select" id="image-edit-count">
+                                        <option value="1">1张</option>
+                                        <option value="2">2张</option>
+                                        <option value="3">3张</option>
+                                        <option value="4">4张</option>
+                                        <option value="5">5张</option>
+                                    </select>
+                                    <small class="form-help">一次生成的图像数量</small>
+                                </div>
+                            </div>
+
+                            <!-- TTS API 配置 -->
+                            <div class="config-section">
+                                <h3 class="config-section-title">🔊 语音合成 API</h3>
+                                <div class="form-group">
+                                    <label class="form-label">API 地址</label>
+                                    <input type="url" class="form-input" id="tts-api-address" placeholder="https://api.example.com">
+                                    <small class="form-help">语音合成服务的API地址</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">API 密钥</label>
+                                    <input type="text" class="form-input" id="tts-api-key" placeholder="sk-...">
+                                    <small class="form-help">语音合成服务的API密钥</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">TTS 模型</label>
+                                    <select class="form-select" id="tts-model">
+                                        <option value="tts-1">TTS-1</option>
+                                        <option value="tts-1-hd">TTS-1 HD</option>
+                                    </select>
+                                    <small class="form-help">通用TTS模型选择</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">TTS 语音</label>
+                                    <select class="form-select" id="tts-voice">
+                                        <option value="alloy">Alloy</option>
+                                        <option value="echo">Echo</option>
+                                        <option value="fable">Fable</option>
+                                        <option value="onyx">Onyx</option>
+                                        <option value="nova">Nova</option>
+                                        <option value="shimmer">Shimmer</option>
+                                    </select>
+                                    <small class="form-help">TTS语音选择</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">响应格式</label>
+                                    <select class="form-select" id="tts-response-format">
+                                        <option value="mp3">MP3</option>
+                                        <option value="opus">Opus</option>
+                                        <option value="aac">AAC</option>
+                                        <option value="flac">FLAC</option>
+                                    </select>
+                                    <small class="form-help">音频文件格式</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">语速</label>
+                                    <select class="form-select" id="tts-speed">
+                                        <option value="0.25">0.25x</option>
+                                        <option value="0.5">0.5x</option>
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1.0">1.0x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="1.75">1.75x</option>
+                                        <option value="2.0">2.0x</option>
+                                        <option value="2.5">2.5x</option>
+                                        <option value="3.0">3.0x</option>
+                                        <option value="4.0">4.0x</option>
+                                    </select>
+                                    <small class="form-help">语音播放速度</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">千问TTS模型</label>
+                                    <select class="form-select" id="qwen-tts-model">
+                                        <option value="cosyvoice-v1">CosyVoice V1</option>
+                                        <option value="sambert-zhichu-v1">Sambert Zhichu V1</option>
+                                        <option value="sambert-zhiru-v1">Sambert Zhiru V1</option>
+                                        <option value="sambert-zhiyan-v1">Sambert Zhiyan V1</option>
+                                        <option value="sambert-zhiyue-v1">Sambert Zhiyue V1</option>
+                                    </select>
+                                    <small class="form-help">千问TTS模型选择</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">千问TTS语音</label>
+                                    <select class="form-select" id="qwen-tts-voice">
+                                        <option value="longwan">龙湾</option>
+                                        <option value="longtian">龙天</option>
+                                        <option value="longxiaochun">龙小春</option>
+                                        <option value="longxiaoxia">龙小夏</option>
+                                        <option value="longxiaoqiu">龙小秋</option>
+                                        <option value="longxiaodong">龙小冬</option>
+                                        <option value="longfeifei">龙飞飞</option>
+                                        <option value="longmiaomiao">龙苗苗</option>
+                                    </select>
+                                    <small class="form-help">千问TTS语音角色</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">千问TTS格式</label>
+                                    <select class="form-select" id="qwen-tts-format">
+                                        <option value="mp3">MP3</option>
+                                        <option value="wav">WAV</option>
+                                        <option value="pcm">PCM</option>
+                                    </select>
+                                    <small class="form-help">千问TTS音频格式</small>
+                                </div>
+                            </div>
+
+                            <!-- DashScope API 配置 -->
+                            <div class="config-section">
+                                <h3 class="config-section-title">🎯 阿里云百炼 DashScope API</h3>
+                                <div class="form-group">
+                                    <label class="form-label">API 密钥</label>
+                                    <input type="text" class="form-input" id="dashscope-api-key" placeholder="sk-...">
+                                    <small class="form-help">用于qwen-image-edit等阿里云百炼服务的API密钥</small>
+                                </div>
+                            </div>
+
+                            <!-- 其他配置 -->
+                            <div class="config-section">
+                                <h3 class="config-section-title">🔧 其他配置</h3>
+                                <div class="form-group">
+                                    <label class="form-label">日志级别</label>
+                                    <select class="form-select" id="log-level">
+                                        <option value="error">Error</option>
+                                        <option value="warn">Warning</option>
+                                        <option value="info">Info</option>
+                                        <option value="debug">Debug</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">请求超时 (秒)</label>
+                                    <input type="number" class="form-input" id="request-timeout" min="1" max="300" value="30">
+                                    <small class="form-help">API请求的超时时间</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务状态标签页 -->
+        <div id="tasks-tab" class="tab-content">
+            <div class="main-content">
+                <div class="panel" style="grid-column: 1 / -1;">
+                    <div class="panel-header">
+                        📊 任务执行状态监控
+                        <button class="btn btn-primary" onclick="refreshTasks()" style="float: right;">🔄 刷新</button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="tasks-loading" class="loading">正在加载任务状态...</div>
+                        <div id="tasks-error" class="error" style="display: none;"></div>
+                        <div id="tasks-content" style="display: none;">
+                            <!-- 任务统计 -->
+                            <div class="status-bar" style="margin-bottom: 20px;">
+                                <div class="status-card">
+                                    <h3>总任务数</h3>
+                                    <div class="status-value" id="total-tasks">0</div>
+                                </div>
+                                <div class="status-card">
+                                    <h3>进行中</h3>
+                                    <div class="status-value" id="processing-tasks" style="color: #f39c12;">0</div>
+                                </div>
+                                <div class="status-card">
+                                    <h3>已完成</h3>
+                                    <div class="status-value" id="completed-tasks" style="color: #27ae60;">0</div>
+                                </div>
+                                <div class="status-card">
+                                    <h3>失败</h3>
+                                    <div class="status-value" id="failed-tasks" style="color: #e74c3c;">0</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 任务列表 -->
+                            <div id="tasks-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加服务模态框 -->
+    <div id="add-service-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">添加 MCP 服务</h2>
+                <button class="close-btn" onclick="hideAddServiceModal()">&times;</button>
+            </div>
+            <form id="add-service-form">
+                <div class="form-group">
+                    <label class="form-label">服务 ID *</label>
+                    <input type="text" class="form-input" name="id" required placeholder="例如: my-search-service">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">服务名称 *</label>
+                    <input type="text" class="form-input" name="name" required placeholder="例如: 搜索服务">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">描述</label>
+                    <textarea class="form-input form-textarea" name="description" placeholder="服务功能描述"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">连接类型 *</label>
+                    <select class="form-select" name="type" required onchange="toggleConnectionFields()">
+                        <option value="stdio">Stdio (本地进程)</option>
+                        <option value="sse">SSE (Server-Sent Events)</option>
+                        <option value="websocket">WebSocket</option>
+                    </select>
+                </div>
+                
+                <!-- Stdio 配置 -->
+                <div id="stdio-config">
+                    <div class="form-group">
+                        <label class="form-label">命令 *</label>
+                        <input type="text" class="form-input" name="command" placeholder="例如: node">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">参数 (每行一个)</label>
+                        <textarea class="form-input" name="args" placeholder="例如:\nserver.js\n--port\n3000"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">环境变量 (JSON 格式)</label>
+                        <textarea class="form-input" name="env" placeholder='{\n  "API_KEY": "your-key",\n  "DEBUG": "true"\n}'></textarea>
+                    </div>
+                </div>
+                
+                <!-- URL 配置 (SSE/WebSocket) -->
+                <div id="url-config" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">服务 URL *</label>
+                        <input type="url" class="form-input" name="url" placeholder="例如: http://localhost:3002/mcp">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">请求头 (JSON 格式)</label>
+                        <textarea class="form-input" name="headers" placeholder='{\n  "Authorization": "Bearer token",\n  "Content-Type": "application/json"\n}'></textarea>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" name="enabled" id="service-enabled" checked>
+                    <label for="service-enabled">启用服务</label>
+                </div>
+                
+                <div style="margin-top: 30px; text-align: right;">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddServiceModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">添加服务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Bridge Service Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e5e7;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #007aff;
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #f0f0f0;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #fafafa;
+        }
+
+        .service-card h4 {
+            color: #1d1d1f;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .service-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .log-table th,
+        .log-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .log-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+            position: sticky;
+            top: 0;
+        }
+
+        .log-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .task-card {
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-type {
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .task-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-running {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .refresh-btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #e5e5e7;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .log-details {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .json-viewer {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e7;
+            border-radius: 4px;
+            padding: 0.5rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable:hover {
+            background: #f0f0f0;
+        }
+
+        .expanded .json-viewer {
+            display: block;
+        }
+
+        .collapsed .json-viewer {
+            display: none;
+        }
+
+        .process-steps {
+            margin-top: 0.5rem;
+        }
+
+        .process-step {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e7;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #6c757d;
+        }
+
+        .process-step.status-completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .process-step.status-processing {
+            border-left-color: #007bff;
+            background: #cce5ff;
+        }
+
+        .process-step.status-pending {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .process-step.status-failed {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .process-step small {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .expanded .process-steps {
+            display: block;
+        }
+
+        .collapsed .process-steps {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .nav-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MCP Bridge Service Dashboard</h1>
+            <p>管理和监控 Model Context Protocol 服务连接</p>
+            <div class="nav-links">
+                <a href="/" class="nav-link">配置管理</a>
+                <a href="/dashboard.html" class="nav-link">服务监控</a>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>连接的服务</h3>
+                <div class="value" id="connectedServices">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>总API调用</h3>
+                <div class="value" id="totalAPICalls">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>活跃任务</h3>
+                <div class="value" id="activeTasks">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>工具调用</h3>
+                <div class="value" id="totalToolCalls">-</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('services')">服务管理</button>
+            <button class="tab" onclick="showTab('tasks')">AI任务</button>
+            <button class="tab" onclick="showTab('logs')">调用日志</button>
+            <button class="tab" onclick="showTab('tools')">工具调用</button>
+        </div>
+
+        <div id="services" class="tab-content active">
+            <button class="refresh-btn" onclick="loadServices()">刷新服务</button>
+            <div id="servicesContent" class="loading">加载中...</div>
+        </div>
+
+        <div id="tasks" class="tab-content">
+            <div class="filters">
+                <select class="filter-select" id="taskTypeFilter" onchange="loadTasks()">
+                    <option value="">所有类型</option>
+                    <option value="text-to-image">文生图</option>
+                    <option value="image-to-image">图生图</option>
+                    <option value="edit-image">编辑图像</option>
+                    <option value="text-to-speech">文生语音</option>
+                    <option value="text-to-video">文生视频</option>
+                    <option value="image-to-video">图生视频</option>
+                </select>
+                <select class="filter-select" id="taskStatusFilter" onchange="loadTasks()">
+                    <option value="">所有状态</option>
+                    <option value="pending">等待中</option>
+                    <option value="running">运行中</option>
+                    <option value="completed">已完成</option>
+                    <option value="failed">失败</option>
+                </select>
+                <button class="refresh-btn" onclick="loadTasks()">刷新任务</button>
+            </div>
+            <div id="tasksContent" class="loading">加载中...</div>
+        </div>
+
+        <div id="logs" class="tab-content">
+            <div class="filters">
+                <select class="filter-select" id="logLimitFilter" onchange="loadAPILogs()">
+                    <option value="50">最近50条</option>
+                    <option value="100">最近100条</option>
+                    <option value="200">最近200条</option>
+                </select>
+                <button class="refresh-btn" onclick="loadAPILogs()">刷新日志</button>
+            </div>
+            <div id="logsContent" class="loading">加载中...</div>
+        </div>
+
+        <div id="tools" class="tab-content">
+            <div class="filters">
+                <select class="filter-select" id="serviceFilter" onchange="loadToolLogs()">
+                    <option value="">所有服务</option>
+                </select>
+                <select class="filter-select" id="toolLimitFilter" onchange="loadToolLogs()">
+                    <option value="50">最近50条</option>
+                    <option value="100">最近100条</option>
+                    <option value="200">最近200条</option>
+                </select>
+                <button class="refresh-btn" onclick="loadToolLogs()">刷新工具调用</button>
+            </div>
+            <div id="toolsContent" class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+yarn.lock
+.obsidian
+.env
+# 配置文件包含敏感信息
+packages/mcp-bridge-service/config.json
+# 日志文件
+*.log
+logs/
+# 大文件和临时文件
+*.dmg
+*.zip
+*.asar
+# 其他项目文件
+HarryTyping/
+Logseq2Ollama/
